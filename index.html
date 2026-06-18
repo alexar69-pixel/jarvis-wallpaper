@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stark HUD Wallpaper</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="hud-container">
+        
+        <!-- LEFT: ARC REACTOR & NEURAL NET -->
+        <div class="reactor-container">
+            <div class="reactor" id="jarvis-orb">
+                <canvas id="neural-canvas"></canvas>
+                <div class="reactor-core">
+                    <canvas id="wave-canvas"></canvas>
+                </div>
+                <div class="reactor-ring ring-1"></div>
+                <div class="reactor-ring ring-2"></div>
+                <div class="reactor-ring ring-3"></div>
+                <div class="reactor-ring ring-4"></div>
+                <div class="reactor-ring ring-inner"></div>
+            </div>
+            <div class="status-text" id="status-text">SYSTEM ONLINE</div>
+            
+            <!-- SUBTITLES (Centered below reactor) -->
+            <div class="interaction-area">
+                <div class="message-container">
+                    <div class="message jarvis">
+                        <span class="prefix">J.A.R.V.I.S:</span>
+                        <span class="text" id="current-response">Iniciando sistemas de telemetría...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: INFORMATION PANELS -->
+        <div class="side-panels">
+            
+            <!-- WEATHER & TIME -->
+            <div class="panel weather-panel">
+                <div class="time-display" id="time-display">00:00:00</div>
+                <div class="date-display" id="date-display">01/01/2026</div>
+                <div class="weather-info">
+                    <div class="weather-temp" id="weather-temp">--°C</div>
+                    <div class="weather-desc" id="weather-desc">Awaiting Telemetry...</div>
+                    <div class="weather-loc" id="weather-loc">Unknown Location</div>
+                </div>
+            </div>
+
+            <!-- SYSTEM STATS -->
+            <div class="panel system-panel">
+                <div class="panel-header">SYSTEM DIAGNOSTICS</div>
+                <div class="stat-row">
+                    <span class="stat-label">CPU LOAD</span>
+                    <div class="bar-container"><div class="bar-fill" id="cpu-bar" style="width: 0%;"></div></div>
+                    <span class="stat-value" id="cpu-val">0%</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">MEMORY</span>
+                    <div class="bar-container"><div class="bar-fill" id="ram-bar" style="width: 0%;"></div></div>
+                    <span class="stat-value" id="ram-val">0%</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">DISK (C:)</span>
+                    <div class="bar-container"><div class="bar-fill" id="disk-bar" style="width: 0%;"></div></div>
+                    <span class="stat-value" id="disk-val">0%</span>
+                </div>
+            </div>
+
+            <!-- SHORTCUTS -->
+            <div class="panel shortcuts-panel">
+                <div class="panel-header">QUICK LAUNCH PROTOCOLS</div>
+                <div class="shortcut-grid">
+                    <button class="btn-launch" onclick="launchApp('chrome')">CHROME</button>
+                    <button class="btn-launch" onclick="launchApp('firefox')">FIREFOX</button>
+                    <button class="btn-launch" onclick="launchApp('brave')">BRAVE</button>
+                    <button class="btn-launch" onclick="launchApp('explorer')">FILES</button>
+                    <button class="btn-launch" onclick="launchApp('discord')">DISCORD</button>
+                    <button class="btn-launch" onclick="launchApp('gemini')">GEMINI</button>
+                    <button class="btn-launch" onclick="launchApp('chatgpt')">CHATGPT</button>
+                </div>
+            </div>
+            
+        </div>
+
+    </div>
+
+    <!-- Background effects -->
+    <div class="bg-grid"></div>
+    <div class="bg-vignette"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>

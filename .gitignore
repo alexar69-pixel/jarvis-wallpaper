@@ -1,0 +1,15 @@
+# Exe files
+*.exe
+
+# Configuration files with secrets
+backend/config.json
+
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# PyInstaller folders
+backend/build/
+backend/dist/
+*.spec

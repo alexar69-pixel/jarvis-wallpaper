@@ -1,0 +1,193 @@
+:root {
+    --cyan: #00e5ff;
+    --cyan-dim: rgba(0, 229, 255, 0.2);
+    --dark-bg: #02060f;
+    --text-color: #d0f8ff;
+    --font-mono: 'Share Tech Mono', monospace;
+    --font-ui: 'Rajdhani', sans-serif;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background-color: var(--dark-bg);
+    color: var(--text-color);
+    font-family: var(--font-ui);
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* Background Effects */
+.bg-grid {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0;
+    background-image: 
+        linear-gradient(var(--cyan-dim) 1px, transparent 1px),
+        linear-gradient(90deg, var(--cyan-dim) 1px, transparent 1px);
+    background-size: 60px 60px;
+    opacity: 0.15;
+}
+.bg-vignette {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
+    background: radial-gradient(circle, transparent 30%, #000000 120%);
+}
+
+/* Layout: 2 Columns */
+.hud-container {
+    position: relative; z-index: 10;
+    width: 100%; height: 100%;
+    display: grid;
+    grid-template-columns: 1fr 400px; /* Reactor left, panels right */
+    gap: 40px;
+    padding: 40px;
+    pointer-events: none;
+}
+
+/* LEFT: Reactor Area */
+.reactor-container {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+
+.reactor {
+    position: relative; 
+    width: 500px; height: 500px; /* Much bigger */
+    display: flex; justify-content: center; align-items: center;
+    transition: all 0.5s ease;
+}
+
+#neural-canvas {
+    position: absolute;
+    width: 100%; height: 100%;
+    border-radius: 50%;
+    z-index: 2;
+    opacity: 0.8;
+}
+
+.reactor-core {
+    position: relative;
+    width: 150px; height: 150px;
+    background-color: #fff;
+    border-radius: 50%;
+    box-shadow: 0 0 60px var(--cyan), 0 0 120px var(--cyan) inset;
+    animation: pulse 4s infinite alternate ease-in-out;
+    z-index: 5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+#wave-canvas {
+    width: 100%; height: 100%;
+    position: absolute;
+    top: 0; left: 0;
+    z-index: 10;
+}
+
+.reactor-ring {
+    position: absolute; border-radius: 50%;
+    border: 2px solid transparent;
+}
+
+.ring-1 {
+    width: 300px; height: 300px;
+    border-top: 6px solid var(--cyan); border-bottom: 6px solid var(--cyan);
+    animation: spin 12s linear infinite;
+}
+.ring-2 {
+    width: 360px; height: 360px;
+    border-left: 3px dashed var(--cyan); border-right: 3px dashed var(--cyan);
+    animation: spinReverse 18s linear infinite;
+}
+.ring-3 {
+    width: 420px; height: 420px;
+    border: 2px solid var(--cyan-dim);
+    background-image: repeating-conic-gradient(from 0deg, var(--cyan) 0deg 5deg, transparent 5deg 15deg);
+    -webkit-mask-image: radial-gradient(transparent 68%, black 70%);
+    animation: spin 40s linear infinite; opacity: 0.6;
+}
+.ring-4 {
+    width: 480px; height: 480px;
+    border: 1px solid rgba(0, 229, 255, 0.4);
+    box-shadow: 0 0 20px rgba(0, 229, 255, 0.2) inset;
+    animation: spinReverse 60s linear infinite;
+}
+.ring-inner {
+    width: 200px; height: 200px;
+    border: 3px solid var(--cyan);
+    box-shadow: 0 0 30px var(--cyan) inset;
+}
+
+.status-text {
+    margin-top: 40px; font-family: var(--font-mono); font-size: 24px;
+    letter-spacing: 8px; color: var(--cyan); text-shadow: 0 0 15px var(--cyan);
+}
+
+.interaction-area {
+    margin-top: 30px;
+    display: flex; align-items: flex-end; justify-content: center;
+    width: 80%;
+}
+.message-container {
+    width: 100%;
+    background: rgba(0, 15, 30, 0.8);
+    border-top: 2px solid var(--cyan);
+    border-bottom: 2px solid var(--cyan);
+    padding: 20px 30px;
+    box-shadow: 0 0 30px var(--cyan-dim);
+    text-align: center; font-size: 1.8rem;
+}
+.message .prefix { color: var(--cyan); font-weight: bold; margin-right: 15px; }
+
+/* States */
+.reactor.listening .reactor-core { background-color: #ff0055; box-shadow: 0 0 80px #ff0055, 0 0 120px #ff0055 inset; }
+.reactor.listening .ring-1 { border-color: #ff0055; }
+.reactor.processing .reactor-core { background-color: #a200ff; box-shadow: 0 0 80px #a200ff, 0 0 120px #a200ff inset; animation-duration: 0.5s; }
+.reactor.processing .ring-1 { border-color: #a200ff; animation-duration: 2s; }
+
+/* RIGHT: Panels */
+.side-panels {
+    display: flex; flex-direction: column; gap: 20px;
+    height: 100%; pointer-events: auto;
+}
+
+.panel {
+    background: rgba(0, 15, 30, 0.7);
+    border: 1px solid var(--cyan);
+    box-shadow: inset 0 0 20px var(--cyan-dim), 0 0 15px var(--cyan-dim);
+    backdrop-filter: blur(10px);
+    padding: 25px;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%);
+}
+
+.panel-header {
+    font-family: var(--font-mono); font-size: 16px; color: var(--cyan);
+    border-bottom: 1px solid var(--cyan); padding-bottom: 8px; margin-bottom: 20px;
+    letter-spacing: 3px;
+}
+
+.time-display { font-family: var(--font-mono); font-size: 54px; color: var(--cyan); text-shadow: 0 0 15px var(--cyan); text-align: right;}
+.date-display { font-family: var(--font-mono); font-size: 18px; margin-bottom: 20px; text-align: right;}
+.weather-temp { font-size: 56px; font-weight: bold; text-align: right;}
+.weather-desc { font-size: 18px; text-transform: uppercase; color: var(--cyan); text-align: right;}
+.weather-loc { font-family: var(--font-mono); font-size: 14px; opacity: 0.7; text-align: right;}
+
+.stat-row { display: flex; align-items: center; margin-bottom: 20px; font-family: var(--font-mono); font-size: 15px; }
+.stat-label { width: 90px; }
+.bar-container { flex-grow: 1; height: 12px; background: rgba(0,0,0,0.6); border: 1px solid var(--cyan-dim); margin: 0 15px; }
+.bar-fill { height: 100%; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); transition: width 0.5s ease; }
+.stat-value { width: 45px; text-align: right; color: var(--cyan); }
+
+.shortcut-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+.btn-launch {
+    background: rgba(0, 229, 255, 0.05); border: 1px solid var(--cyan);
+    color: var(--cyan); font-family: var(--font-mono); font-size: 14px;
+    padding: 12px; cursor: pointer; transition: all 0.2s;
+    text-align: center; letter-spacing: 2px;
+}
+.btn-launch:hover { background: var(--cyan); color: #000; box-shadow: 0 0 15px var(--cyan); transform: scale(1.05); }
+
+/* Animations */
+@keyframes spin { 100% { transform: rotate(360deg); } }
+@keyframes spinReverse { 100% { transform: rotate(-360deg); } }
+@keyframes pulse { 0% { transform: scale(0.95); opacity: 0.9; } 100% { transform: scale(1.05); opacity: 1; } }
