@@ -20,7 +20,7 @@ setInterval(() => {
 }, 1000);
 
 // --- 3D Hologram Core (Three.js) ---
-const container3D = document.getElementById('three-container');
+const container3D = document.getElementById('three-container-gold');
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, 500 / 500, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
