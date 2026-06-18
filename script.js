@@ -31,69 +31,95 @@ const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
 renderer.setSize(500, 500);
 container3D.appendChild(renderer.domElement);
 
-// Create Hologram Geometry (Icosahedron)
-const geometry = new THREE.IcosahedronGeometry(2.5, 1);
-const material = new THREE.MeshBasicMaterial({ 
-    color: 0x00e5ff, 
-    wireframe: true, 
-    transparent: true, 
-    opacity: 0.3 
-});
-const hologram = new THREE.Mesh(geometry, material);
-scene.add(hologram);
+// --- ARC REACTOR 3D MODEL ---
+const arcReactorGroup = new THREE.Group();
+scene.add(arcReactorGroup);
 
-// Create Particles
+// Materials
+const coreMaterial = new THREE.MeshBasicMaterial({ color: 0x00e5ff, transparent: true, opacity: 0.9 });
+const wireMaterial = new THREE.MeshBasicMaterial({ color: 0x00e5ff, wireframe: true, transparent: true, opacity: 0.4 });
+const darkMetal = new THREE.MeshBasicMaterial({ color: 0x333333, wireframe: true, transparent: true, opacity: 0.8 });
+
+// 1. Core Sphere
+const coreGeo = new THREE.SphereGeometry(0.8, 16, 16);
+const coreMesh = new THREE.Mesh(coreGeo, coreMaterial);
+arcReactorGroup.add(coreMesh);
+
+// 2. Inner Ring
+const innerRingGeo = new THREE.TorusGeometry(1.5, 0.2, 16, 32);
+const innerRing = new THREE.Mesh(innerRingGeo, wireMaterial);
+arcReactorGroup.add(innerRing);
+
+// 3. Outer Ring
+const outerRingGeo = new THREE.TorusGeometry(2.2, 0.1, 16, 64);
+const outerRing = new THREE.Mesh(outerRingGeo, wireMaterial);
+arcReactorGroup.add(outerRing);
+
+// 4. Coils around the inner ring
+const coilsGroup = new THREE.Group();
+const coilGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.6, 8);
+for(let i=0; i<10; i++) {
+    const angle = (i / 10) * Math.PI * 2;
+    const coil = new THREE.Mesh(coilGeo, darkMetal);
+    coil.position.x = Math.cos(angle) * 1.5;
+    coil.position.y = Math.sin(angle) * 1.5;
+    coil.rotation.z = angle + Math.PI/2;
+    coilsGroup.add(coil);
+}
+arcReactorGroup.add(coilsGroup);
+
+// 5. Particles
 const particlesGeometry = new THREE.BufferGeometry();
-const particlesCount = 200;
+const particlesCount = 300;
 const posArray = new Float32Array(particlesCount * 3);
 for(let i = 0; i < particlesCount * 3; i++) {
     posArray[i] = (Math.random() - 0.5) * 8;
 }
 particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-const particlesMaterial = new THREE.PointsMaterial({
-    size: 0.05,
-    color: 0x00e5ff,
-    transparent: true,
-    opacity: 0.8
-});
+const particlesMaterial = new THREE.PointsMaterial({ size: 0.05, color: 0x00e5ff, transparent: true, opacity: 0.8 });
 const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
 scene.add(particlesMesh);
 
 camera.position.z = 5;
 
-// GLTF Loader (Commented out for future Sketchfab models)
-/*
-const loader = new THREE.GLTFLoader();
-loader.load('tu_modelo_sketchfab.glb', function(gltf) {
-    scene.add(gltf.scene);
-    hologram.visible = false; // Hide default hologram
-    particlesMesh.visible = false;
-}, undefined, function(error) {
-    console.error(error);
-});
-*/
-
+// Animation Loop
 function animate3D() {
     requestAnimationFrame(animate3D);
     
     // Base rotation
-    hologram.rotation.x += 0.005;
-    hologram.rotation.y += 0.005;
+    arcReactorGroup.rotation.x += 0.005;
+    arcReactorGroup.rotation.y += 0.005;
+    
+    // Coils rotate independently on Z
+    coilsGroup.rotation.z -= 0.01;
+    
+    // Inner ring rotates opposite
+    innerRing.rotation.z += 0.02;
+    
     particlesMesh.rotation.y -= 0.002;
     
     // React to states
     if(orb.classList.contains('listening')) {
-        material.color.setHex(0xff0055);
+        coreMaterial.color.setHex(0xff0055);
+        wireMaterial.color.setHex(0xff0055);
         particlesMaterial.color.setHex(0xff0055);
-        hologram.rotation.y += 0.02; // Spin faster
+        arcReactorGroup.rotation.y += 0.02; // Spin faster
+        coilsGroup.rotation.z -= 0.04;
     } else if(orb.classList.contains('processing')) {
-        material.color.setHex(0xa200ff);
+        coreMaterial.color.setHex(0xa200ff);
+        wireMaterial.color.setHex(0xa200ff);
         particlesMaterial.color.setHex(0xa200ff);
-        hologram.rotation.x += 0.05; // Spin erratically
+        arcReactorGroup.rotation.x += 0.05; // Spin erratically
+        coilsGroup.rotation.z -= 0.04;
     } else {
-        material.color.setHex(0x00e5ff);
+        coreMaterial.color.setHex(0x00e5ff);
+        wireMaterial.color.setHex(0x00e5ff);
         particlesMaterial.color.setHex(0x00e5ff);
     }
+    
+    // Core pulsing effect
+    const time = Date.now() * 0.005;
+    coreMesh.scale.setScalar(1 + Math.sin(time) * 0.1);
     
     renderer.render(scene, camera);
 }
