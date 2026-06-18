@@ -10,8 +10,8 @@ async def vision_listener_loop(broadcast_callback):
     """
     face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
     
-    # 0 es la camara principal de Windows
-    cap = cv2.VideoCapture(0)
+    # 0 es la camara principal de Windows. Usamos DSHOW para evitar errores MSMF
+    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
     
     # Flags de estado
     is_user_present = False
