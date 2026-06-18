@@ -247,6 +247,7 @@ async def handler(websocket):
         config = load_config()
         await websocket.send(json.dumps({"type": "state", "state": "IDLE"}))
         await websocket.send(json.dumps({"type": "message", "text": f"Motor HUD activo."}))
+        await websocket.send(json.dumps({"type": "theme", "value": config.get("theme", "theme-gold")}))
         
         async for message in websocket:
             try:

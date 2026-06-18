@@ -239,6 +239,15 @@ function connectWebSocket() {
                 } else if (data.value === "sleep_mode") {
                     document.body.classList.add("sleep-mode");
                 }
+            } else if (data.type === "theme") {
+                document.body.classList.remove("theme-gold", "theme-matrix", "theme-cyan");
+                if (data.value && data.value !== "theme-cyan") {
+                    document.body.classList.add(data.value);
+                }
+                setTimeout(() => {
+                    baseColor = getThemeColor('--primary');
+                    dangerColor = getThemeColor('--danger');
+                }, 100);
             }
         } catch (e) {
             console.error("Error parsing message", e);

@@ -52,6 +52,13 @@ class JarvisSettingsApp:
         self.loc_entry.insert(0, self.config.get("location", "Madrid"))
         self.loc_entry.pack(anchor="w", padx=20, pady=5)
         
+        # Tema Visual
+        ttk.Label(root, text="Tema Visual (Interfaz):").pack(anchor="w", padx=20)
+        self.theme_var = tk.StringVar()
+        self.theme_combo = ttk.Combobox(root, textvariable=self.theme_var, state="readonly", values=["theme-gold", "theme-matrix", "theme-cyan"])
+        self.theme_combo.set(self.config.get("theme", "theme-gold"))
+        self.theme_combo.pack(anchor="w", padx=20, pady=5)
+        
         # Save Button
         ttk.Button(root, text="Guardar Configuración", command=self.save_all).pack(pady=20)
 
@@ -62,6 +69,7 @@ class JarvisSettingsApp:
         self.config["openclaw_url"] = self.openclaw_entry.get().strip()
         self.config["wake_word"] = self.wake_entry.get().strip().lower()
         self.config["location"] = self.loc_entry.get().strip()
+        self.config["theme"] = self.theme_var.get()
         
         save_config(self.config)
         messagebox.showinfo("Guardado", "Configuración guardada correctamente.\nReinicia el backend si está ejecutándose.")
