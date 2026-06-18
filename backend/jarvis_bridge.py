@@ -152,7 +152,7 @@ import sys
 def handle_action(app_name, loop):
     print(f"Lanzando aplicación: {app_name}")
     try:
-        if app_name == 'settings':
+        if app_name.lower() == 'settings':
             gui_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'gui.py')
             subprocess.Popen([sys.executable, gui_path], creationflags=subprocess.CREATE_NEW_CONSOLE)
             asyncio.run_coroutine_threadsafe(send_to_clients({"type": "message", "text": "Abriendo panel de configuración..."}), loop)
