@@ -23,56 +23,82 @@ setInterval(() => {
     dateDisplay.innerText = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase();
 }, 1000);
 
-// Neural Network Canvas Animation
-const canvas = document.getElementById('neural-canvas');
-const ctx = canvas.getContext('2d');
-canvas.width = 500;
-canvas.height = 500;
+// --- 3D Hologram Core (Three.js) ---
+const container3D = document.getElementById('three-container');
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(75, 500 / 500, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+renderer.setSize(500, 500);
+container3D.appendChild(renderer.domElement);
 
-const particles = [];
-const numParticles = 60;
+// Create Hologram Geometry (Icosahedron)
+const geometry = new THREE.IcosahedronGeometry(2.5, 1);
+const material = new THREE.MeshBasicMaterial({ 
+    color: 0x00e5ff, 
+    wireframe: true, 
+    transparent: true, 
+    opacity: 0.3 
+});
+const hologram = new THREE.Mesh(geometry, material);
+scene.add(hologram);
 
-for(let i = 0; i < numParticles; i++) {
-    particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 1.5,
-        vy: (Math.random() - 0.5) * 1.5
-    });
+// Create Particles
+const particlesGeometry = new THREE.BufferGeometry();
+const particlesCount = 200;
+const posArray = new Float32Array(particlesCount * 3);
+for(let i = 0; i < particlesCount * 3; i++) {
+    posArray[i] = (Math.random() - 0.5) * 8;
 }
+particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+const particlesMaterial = new THREE.PointsMaterial({
+    size: 0.05,
+    color: 0x00e5ff,
+    transparent: true,
+    opacity: 0.8
+});
+const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+scene.add(particlesMesh);
 
-function drawNeuralNet() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+camera.position.z = 5;
+
+// GLTF Loader (Commented out for future Sketchfab models)
+/*
+const loader = new THREE.GLTFLoader();
+loader.load('tu_modelo_sketchfab.glb', function(gltf) {
+    scene.add(gltf.scene);
+    hologram.visible = false; // Hide default hologram
+    particlesMesh.visible = false;
+}, undefined, function(error) {
+    console.error(error);
+});
+*/
+
+function animate3D() {
+    requestAnimationFrame(animate3D);
     
-    // Determine color based on state
-    let strokeColor = 'rgba(0, 229, 255, 0.15)'; // Cyan (IDLE)
-    if(orb.classList.contains('listening')) strokeColor = 'rgba(255, 0, 85, 0.15)'; // Red
-    else if(orb.classList.contains('processing')) strokeColor = 'rgba(162, 0, 255, 0.15)'; // Purple
+    // Base rotation
+    hologram.rotation.x += 0.005;
+    hologram.rotation.y += 0.005;
+    particlesMesh.rotation.y -= 0.002;
     
-    for(let i = 0; i < numParticles; i++) {
-        let p = particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
-        
-        if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
-        if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
-        
-        for(let j = i + 1; j < numParticles; j++) {
-            let p2 = particles[j];
-            let dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-            if(dist < 80) {
-                ctx.beginPath();
-                ctx.moveTo(p.x, p.y);
-                ctx.lineTo(p2.x, p2.y);
-                ctx.strokeStyle = strokeColor;
-                ctx.lineWidth = 1;
-                ctx.stroke();
-            }
-        }
+    // React to states
+    if(orb.classList.contains('listening')) {
+        material.color.setHex(0xff0055);
+        particlesMaterial.color.setHex(0xff0055);
+        hologram.rotation.y += 0.02; // Spin faster
+    } else if(orb.classList.contains('processing')) {
+        material.color.setHex(0xa200ff);
+        particlesMaterial.color.setHex(0xa200ff);
+        hologram.rotation.x += 0.05; // Spin erratically
+    } else {
+        material.color.setHex(0x00e5ff);
+        particlesMaterial.color.setHex(0x00e5ff);
     }
-    requestAnimationFrame(drawNeuralNet);
+    
+    renderer.render(scene, camera);
 }
-drawNeuralNet();
+animate3D();
+// ----------------------------------
 
 // State definitions
 const STATES = {
