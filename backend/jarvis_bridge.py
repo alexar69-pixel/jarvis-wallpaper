@@ -150,7 +150,7 @@ def handle_action(app_name, loop):
     try:
         if app_name == 'settings':
             gui_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'gui.py')
-            os.startfile(gui_path)
+            subprocess.Popen([sys.executable, gui_path], creationflags=subprocess.CREATE_NEW_CONSOLE)
         elif app_name == 'chrome':
             subprocess.Popen(['start', 'chrome'], shell=True)
         elif app_name == 'firefox':
