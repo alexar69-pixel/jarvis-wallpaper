@@ -149,9 +149,8 @@ def handle_action(app_name, loop):
     print(f"Lanzando aplicación: {app_name}")
     try:
         if app_name == 'settings':
-            # Lanzamos la interfaz gráfica usando ruta absoluta
             gui_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'gui.py')
-            subprocess.Popen([sys.executable, gui_path])
+            os.startfile(gui_path)
         elif app_name == 'chrome':
             subprocess.Popen(['start', 'chrome'], shell=True)
         elif app_name == 'firefox':
