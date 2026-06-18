@@ -1,0 +1,11 @@
+websockets==12.0
+SpeechRecognition==3.10.0
+edge-tts==6.1.9
+pygame==2.5.2
+psutil==5.9.6
+opencv-python>=4.8.0
+winsdk==1.0.0b10
+googlesearch-python==1.2.3
+beautifulsoup4==4.12.2
+requests==2.31.0
+pyaudio==0.2.14

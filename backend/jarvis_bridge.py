@@ -143,10 +143,15 @@ async def speak_text_edge(text, voice, loop):
     except Exception as e:
         print(f"Error reproduciendo TTS: {e}")
 
+import sys
+
 def handle_action(app_name, loop):
     print(f"Lanzando aplicación: {app_name}")
     try:
-        if app_name == 'chrome':
+        if app_name == 'settings':
+            # Lanzamos la interfaz gráfica en un proceso separado para no bloquear el backend
+            subprocess.Popen([sys.executable, 'backend/gui.py'])
+        elif app_name == 'chrome':
             subprocess.Popen(['start', 'chrome'], shell=True)
         elif app_name == 'firefox':
             subprocess.Popen(['start', 'firefox'], shell=True)

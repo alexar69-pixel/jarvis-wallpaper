@@ -2,13 +2,11 @@
 JARVIS STARK HUD ASSISTANT - WALLPAPER ENGINE
 =========================================
 
-Para que este fondo interactivo y de telemetría funcione correctamente con tu micrófono y tus programas, es imprescindible ejecutar el motor "Cerebro" (Backend) en segundo plano.
-
-PASOS DE CONFIGURACIÓN RÁPIDA:
-1. Dentro de la carpeta de este Wallpaper, ve a la carpeta "backend/dist".
-2. Abre "Jarvis_Settings.exe".
-3. Elige tu Motor preferido (Ej. Gemini). Si eliges Gemini, necesitarás conseguir una API Key gratuita en Google AI Studio (aistudio.google.com) y pegarla ahí. También escribe el nombre de tu ciudad para el widget de clima. Dale a Guardar.
-4. Ejecuta "Jarvis_Backend.exe". Verás que se abre una consola oculta. Ya está funcionando.
-5. Vuelve a Wallpaper Engine, activa la opción "Interacción de ratón" para este fondo, ¡y di "Jarvis"!
+INSTRUCCIONES DE USO:
+1. Asegúrate de tener micrófono conectado.
+2. Haz doble clic en el archivo `Instalar_Jarvis.bat`. Esto configurará todo automáticamente y abrirá la ventana de Ajustes.
+3. En la ventana de Ajustes, ingresa tu API Key de Gemini u OpenAI.
+4. Una vez configurado, cada vez que enciendas tu PC, haz doble clic en `Iniciar_Jarvis.bat` para encender el "Cerebro" del asistente.
+5. Aplica este fondo en Wallpaper Engine, activa la opción "Interacción de ratón" para este fondo, ¡y di "Jarvis"!
 
 NOTA: Al ser un script compilado que lee sensores de tu sistema y escucha tu micrófono, es posible que Windows Defender o tu Antivirus te pregunten si permites la ejecución o el acceso a la red. Dale a "Permitir".
