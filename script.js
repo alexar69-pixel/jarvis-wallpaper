@@ -172,6 +172,26 @@ function connectWebSocket() {
                 updateMessage(data.text);
             } else if (data.type === 'telemetry') {
                 updateTelemetry(data);
+            } else if (data.type === "media") {
+                const mediaContainer = document.getElementById('media-panel-container');
+                const mediaTitle = document.getElementById('media-title');
+                const mediaArtist = document.getElementById('media-artist');
+                
+                if (data.title) {
+                    mediaTitle.textContent = data.title;
+                    mediaArtist.textContent = data.artist || '';
+                    mediaContainer.style.display = 'block';
+                } else {
+                    mediaContainer.style.display = 'none';
+                }
+            } else if (data.type === "face_detected") {
+                const statusText = document.getElementById('status-text');
+                statusText.textContent = "USER DETECTED";
+                statusText.classList.add('cyan-text');
+                setTimeout(() => {
+                    statusText.classList.remove('cyan-text');
+                    statusText.textContent = "SYSTEM ONLINE";
+                }, 4000);
             }
         } catch (e) {
             console.error("Error parsing message", e);

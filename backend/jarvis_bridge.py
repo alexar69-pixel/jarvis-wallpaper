@@ -17,18 +17,37 @@ from config_manager import load_config
 from providers import send_to_provider
 from memory import add_message, get_recent_history
 from web_search import invisible_search
+from media import media_listener_loop
+from vision import vision_listener_loop
 
 connected_clients = set()
 config = load_config()
 pygame.mixer.init()
 
 # Global state for weather so we don't spam the API
-weather_data = {"temp": "--", "desc": "Buscando...", "location": "Desconocido"}
+weather_data = {"temp": "--", "desc": "Offline"}
 
 async def broadcast_state(state):
     if connected_clients:
         message = json.dumps({"type": "state", "value": state})
         await asyncio.gather(*[client.send(message) for client in connected_clients])
+
+async def broadcast_custom(data_dict):
+    if connected_clients:
+        message = json.dumps(data_dict)
+        await asyncio.gather(*[client.send(message) for client in connected_clients])
+
+async def event_handler_callback(data):
+    # Enviar al frontend
+    await broadcast_custom(data)
+    
+    # Si detectamos que el usuario vuelve, saludamos
+    if data.get("type") == "face_detected":
+        print("[Jarvis]: Bienvenido de nuevo, señor.")
+        asyncio.run_coroutine_threadsafe(broadcast_state("SPEAKING"), loop)
+        future = asyncio.run_coroutine_threadsafe(speak_text_edge("Bienvenido de nuevo, señor. Sistemas en línea.", config.get("voice"), loop), loop)
+        future.result()
+        asyncio.run_coroutine_threadsafe(broadcast_state("IDLE"), loop)
 
 def process_audio(text, loop):
     print(f"\n[Reconocido]: {text}")
@@ -216,6 +235,7 @@ async def handler(websocket):
 
 async def main():
     loop = asyncio.get_running_loop()
+    config = load_config()
     
     # Start background threads & loops
     stt_thread = threading.Thread(target=stt_loop, args=(loop,), daemon=True)
@@ -223,6 +243,8 @@ async def main():
     
     asyncio.create_task(telemetry_loop())
     asyncio.create_task(fetch_weather_loop())
+    asyncio.create_task(media_listener_loop(event_handler_callback))
+    asyncio.create_task(vision_listener_loop(event_handler_callback))
     
     print("Servidor WebSocket iniciado en ws://127.0.0.1:8765...")
     async with websockets.serve(handler, "127.0.0.1", 8765):

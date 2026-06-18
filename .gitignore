@@ -1,15 +1,7 @@
-# Exe files
-*.exe
-
-# Configuration files with secrets
-backend/config.json
-
-# Python caches
-__pycache__/
-*.py[cod]
-*$py.class
-
-# PyInstaller folders
+config.json
+jarvis_memory.db
+backend/__pycache__/
 backend/build/
 backend/dist/
-*.spec
+backend/*.spec
+.env
