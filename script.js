@@ -248,6 +248,18 @@ function connectWebSocket() {
                     baseColor = getThemeColor('--primary');
                     dangerColor = getThemeColor('--danger');
                 }, 100);
+            } else if (data.type === "shortcuts") {
+                const container = document.getElementById("dynamic-shortcuts");
+                if (container && data.shortcuts) {
+                    container.innerHTML = "";
+                    data.shortcuts.forEach(sc => {
+                        const btn = document.createElement("button");
+                        btn.className = "btn-launch";
+                        btn.textContent = sc.name;
+                        btn.onclick = () => launchApp(sc.name);
+                        container.appendChild(btn);
+                    });
+                }
             }
         } catch (e) {
             console.error("Error parsing message", e);

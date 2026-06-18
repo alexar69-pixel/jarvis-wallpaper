@@ -10,7 +10,12 @@ DEFAULT_CONFIG = {
     "openai_api_key": "",
     "voice": "es-ES-AlvaroNeural", # Edge TTS Voice
     "wake_word": "jarvis",
-    "location": "Madrid"
+    "location": "Madrid",
+    "shortcuts": [
+        {"name": "SETTINGS", "path": "settings"},
+        {"name": "CHROME", "path": "chrome"},
+        {"name": "FILES", "path": "explorer"}
+    ]
 }
 
 def load_config():

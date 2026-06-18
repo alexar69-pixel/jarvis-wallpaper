@@ -155,27 +155,31 @@ def handle_action(app_name, loop):
         if app_name == 'settings':
             gui_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'gui.py')
             subprocess.Popen([sys.executable, gui_path], creationflags=subprocess.CREATE_NEW_CONSOLE)
-        elif app_name == 'chrome':
-            subprocess.Popen(['start', 'chrome'], shell=True)
-        elif app_name == 'firefox':
-            subprocess.Popen(['start', 'firefox'], shell=True)
-        elif app_name == 'brave':
-            subprocess.Popen(['start', 'brave'], shell=True)
-        elif app_name == 'explorer':
-            subprocess.Popen(['explorer', 'C:\\'], shell=True)
-        elif app_name == 'discord':
-            # Discord usually installs to LocalAppData
-            discord_path = os.path.join(os.environ['LOCALAPPDATA'], 'Discord', 'Update.exe')
-            if os.path.exists(discord_path):
-                subprocess.Popen([discord_path, '--processStart', 'Discord.exe'])
+            asyncio.run_coroutine_threadsafe(send_to_clients({"type": "message", "text": "Abriendo panel de configuración..."}), loop)
+            return
+
+        # Dynamic shortcut lookup
+        config = load_config()
+        shortcuts = config.get("shortcuts", [])
+        
+        target_path = None
+        for sc in shortcuts:
+            if sc["name"].lower() == app_name.lower():
+                target_path = sc["path"]
+                break
+                
+        if target_path:
+            if target_path.startswith("http"):
+                webbrowser.open(target_path)
+            elif target_path.endswith(".exe"):
+                subprocess.Popen([target_path])
             else:
-                asyncio.run_coroutine_threadsafe(speak_text_edge("No pude encontrar Discord.", load_config().get("voice"), loop), loop)
-        elif app_name == 'gemini':
-            webbrowser.open('https://gemini.google.com')
-        elif app_name == 'chatgpt':
-            webbrowser.open('https://chatgpt.com')
+                # E.g. "chrome", "explorer"
+                subprocess.Popen(['start', target_path], shell=True)
+            asyncio.run_coroutine_threadsafe(send_to_clients({"type": "message", "text": f"Ejecutando {app_name}..."}), loop)
         else:
-            print("Aplicación no soportada.")
+            asyncio.run_coroutine_threadsafe(send_to_clients({"type": "message", "text": f"Atajo no encontrado: {app_name}"}), loop)
+            
     except Exception as e:
         print(f"Error lanzando app: {e}")
 
@@ -252,6 +256,7 @@ async def handler(websocket):
         await websocket.send(json.dumps({"type": "state", "state": "IDLE"}))
         await websocket.send(json.dumps({"type": "message", "text": f"Motor HUD activo."}))
         await websocket.send(json.dumps({"type": "theme", "value": config.get("theme", "theme-gold")}))
+        await websocket.send(json.dumps({"type": "shortcuts", "shortcuts": config.get("shortcuts", [])}))
         
         async for message in websocket:
             try:
@@ -265,6 +270,10 @@ async def handler(websocket):
                         # Enviar actualización de tema a todos los clientes (Wallpaper Engine)
                         loop = asyncio.get_running_loop()
                         asyncio.run_coroutine_threadsafe(send_to_clients({"type": "theme", "value": theme_val}), loop)
+                    elif data.get('action') == 'update_shortcuts':
+                        shortcuts_val = data.get('shortcuts')
+                        loop = asyncio.get_running_loop()
+                        asyncio.run_coroutine_threadsafe(send_to_clients({"type": "shortcuts", "shortcuts": shortcuts_val}), loop)
             except Exception as e:
                 print(f"Error processing client message: {e}")
                 
