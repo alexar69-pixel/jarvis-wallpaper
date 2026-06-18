@@ -25,10 +25,11 @@ body.theme-matrix {
 
 /* Minimalist layout for Cyan Theme to match BQSoNYb69TE video */
 body.theme-cyan .hud-container {
-    grid-template-columns: 1fr !important;
+    /* Hide the right panels, keep left shortcuts and center reactor */
+    grid-template-columns: 250px 1fr !important;
 }
 
-body.theme-cyan .side-panels {
+body.theme-cyan .panels-right {
     display: none !important;
 }
 
