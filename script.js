@@ -241,7 +241,7 @@ function connectWebSocket() {
                 }
             } else if (data.type === "theme") {
                 document.body.classList.remove("theme-gold", "theme-matrix", "theme-cyan");
-                if (data.value && data.value !== "theme-cyan") {
+                if (data.value) {
                     document.body.classList.add(data.value);
                 }
                 setTimeout(() => {
