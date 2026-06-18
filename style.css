@@ -23,19 +23,8 @@ body.theme-matrix {
     --text-color: #ccffcc;
 }
 
-/* Minimalist layout for Cyan Theme to match BQSoNYb69TE video */
-body.theme-cyan .hud-container {
-    /* Hide the right panels, keep left shortcuts and center reactor */
-    grid-template-columns: 250px 1fr !important;
-}
 
-body.theme-cyan .panels-right {
-    display: none !important;
-}
 
-body.theme-cyan .floating-settings {
-    display: block !important;
-}
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
