@@ -252,9 +252,15 @@ async def handler(websocket):
         async for message in websocket:
             try:
                 data = json.loads(message)
-                if data.get('type') == 'action' and data.get('action') == 'launch_app':
-                    loop = asyncio.get_running_loop()
-                    handle_action(data.get('app'), loop)
+                if data.get('type') == 'action':
+                    if data.get('action') == 'launch_app':
+                        loop = asyncio.get_running_loop()
+                        handle_action(data.get('app'), loop)
+                    elif data.get('action') == 'update_theme':
+                        theme_val = data.get('theme')
+                        # Enviar actualización de tema a todos los clientes (Wallpaper Engine)
+                        loop = asyncio.get_running_loop()
+                        asyncio.run_coroutine_threadsafe(send_to_clients({"type": "theme", "value": theme_val}), loop)
             except Exception as e:
                 print(f"Error processing client message: {e}")
                 

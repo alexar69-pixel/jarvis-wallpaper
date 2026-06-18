@@ -1,12 +1,15 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+import asyncio
+import websockets
+import json
 from config_manager import load_config, save_config
 
 class JarvisSettingsApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Jarvis Backend Settings")
-        self.root.geometry("400x500")
+        self.root.geometry("400x600")
         self.config = load_config()
         
         # Titulo
@@ -72,7 +75,18 @@ class JarvisSettingsApp:
         self.config["theme"] = self.theme_var.get()
         
         save_config(self.config)
-        messagebox.showinfo("Guardado", "Configuración guardada correctamente.\nReinicia el backend si está ejecutándose.")
+        
+        # Notificar al backend del cambio de tema
+        async def notify():
+            try:
+                async with websockets.connect("ws://127.0.0.1:8765") as ws:
+                    await ws.send(json.dumps({"type": "action", "action": "update_theme", "theme": self.config["theme"]}))
+            except Exception as e:
+                print("No se pudo notificar al backend:", e)
+                
+        asyncio.run(notify())
+        
+        messagebox.showinfo("Guardado", "Configuración guardada correctamente.\nEl tema se ha aplicado al instante.")
         self.root.destroy()
 
 if __name__ == "__main__":
