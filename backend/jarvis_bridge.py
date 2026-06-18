@@ -11,20 +11,68 @@ import psutil
 import urllib.request
 import webbrowser
 import subprocess
+import re
 
 from config_manager import load_config
 from providers import send_to_provider
+from memory import add_message, get_recent_history
+from web_search import invisible_search
 
 connected_clients = set()
+config = load_config()
 pygame.mixer.init()
 
 # Global state for weather so we don't spam the API
 weather_data = {"temp": "--", "desc": "Buscando...", "location": "Desconocido"}
 
+async def broadcast_state(state):
+    if connected_clients:
+        message = json.dumps({"type": "state", "value": state})
+        await asyncio.gather(*[client.send(message) for client in connected_clients])
+
+def process_audio(text, loop):
+    print(f"\n[Reconocido]: {text}")
+    
+    # 1. Añadir a memoria y buscar historial
+    add_message("user", text)
+    history = get_recent_history(limit=6)
+    
+    # 2. Llamada inicial al LLM
+    response = send_to_provider(config, text, history)
+    
+    # 3. Interceptar Búsqueda Web
+    search_match = re.search(r'\[SEARCH:\s*(.*?)\]', response, re.IGNORECASE)
+    if search_match:
+        query = search_match.group(1).strip()
+        print(f"[Sistema] Interceptada petición de búsqueda web para: {query}")
+        
+        # Realizamos la búsqueda
+        search_result = invisible_search(query)
+        print(f"[Sistema] Resultado extraído: {search_result[:100]}...")
+        
+        # Añadimos el resultado a la memoria como sistema y pedimos respuesta final
+        add_message("system", f"[RESULTADO BÚSQUEDA WEB PARA '{query}']: {search_result}")
+        
+        # Volvemos a pedirle al LLM que construya la respuesta
+        history = get_recent_history(limit=8)
+        response = send_to_provider(config, "Ya he realizado la búsqueda en internet. Usa la información de la memoria para responderme de forma natural.", history)
+
+    # 4. Limpiar posibles restos de tags y guardar
+    response = re.sub(r'\[SEARCH:.*?\]', '', response).strip()
+    print(f"[Jarvis]: {response}")
+    add_message("jarvis", response)
+    
+    # Reproducir audio
+    asyncio.run_coroutine_threadsafe(broadcast_state("SPEAKING"), loop)
+    # Reutilizamos lógica de voz existente
+    future = asyncio.run_coroutine_threadsafe(speak_text_edge(response, config.get("voice"), loop), loop)
+    future.result()
+    asyncio.run_coroutine_threadsafe(broadcast_state("IDLE"), loop)
+
 async def fetch_weather_loop():
     while True:
-        config = load_config()
-        loc = config.get("location", "Madrid")
+        config_data = load_config()
+        loc = config_data.get("location", "Madrid")
         try:
             url = f"https://wttr.in/{urllib.parse.quote(loc)}?format=j1"
             req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
