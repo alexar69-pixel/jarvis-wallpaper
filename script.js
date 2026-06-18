@@ -35,9 +35,17 @@ container3D.appendChild(renderer.domElement);
 const arcReactorGroup = new THREE.Group();
 scene.add(arcReactorGroup);
 
+// Helper to get CSS variable color
+function getThemeColor(varName) {
+    return parseInt(getComputedStyle(document.body).getPropertyValue(varName).trim().replace('#', '0x'));
+}
+
 // Materials
-const coreMaterial = new THREE.MeshBasicMaterial({ color: 0x00e5ff, transparent: true, opacity: 0.9 });
-const wireMaterial = new THREE.MeshBasicMaterial({ color: 0x00e5ff, wireframe: true, transparent: true, opacity: 0.4 });
+let baseColor = getThemeColor('--primary');
+let dangerColor = getThemeColor('--danger');
+
+const coreMaterial = new THREE.MeshBasicMaterial({ color: baseColor, transparent: true, opacity: 0.9 });
+const wireMaterial = new THREE.MeshBasicMaterial({ color: baseColor, wireframe: true, transparent: true, opacity: 0.4 });
 const darkMetal = new THREE.MeshBasicMaterial({ color: 0x333333, wireframe: true, transparent: true, opacity: 0.8 });
 
 // 1. Core Sphere
@@ -76,7 +84,7 @@ for(let i = 0; i < particlesCount * 3; i++) {
     posArray[i] = (Math.random() - 0.5) * 8;
 }
 particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-const particlesMaterial = new THREE.PointsMaterial({ size: 0.05, color: 0x00e5ff, transparent: true, opacity: 0.8 });
+const particlesMaterial = new THREE.PointsMaterial({ size: 0.05, color: baseColor, transparent: true, opacity: 0.8 });
 const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
 scene.add(particlesMesh);
 
@@ -89,32 +97,34 @@ function animate3D() {
     // Base rotation
     arcReactorGroup.rotation.x += 0.005;
     arcReactorGroup.rotation.y += 0.005;
-    
-    // Coils rotate independently on Z
     coilsGroup.rotation.z -= 0.01;
-    
-    // Inner ring rotates opposite
     innerRing.rotation.z += 0.02;
-    
     particlesMesh.rotation.y -= 0.002;
     
     // React to states
-    if(orb.classList.contains('listening')) {
-        coreMaterial.color.setHex(0xff0055);
-        wireMaterial.color.setHex(0xff0055);
-        particlesMaterial.color.setHex(0xff0055);
-        arcReactorGroup.rotation.y += 0.02; // Spin faster
-        coilsGroup.rotation.z -= 0.04;
+    if(orb.classList.contains('listening') || document.body.classList.contains('red-alert')) {
+        coreMaterial.color.setHex(dangerColor);
+        wireMaterial.color.setHex(dangerColor);
+        particlesMaterial.color.setHex(dangerColor);
+        arcReactorGroup.rotation.y += 0.04; // Spin much faster
+        coilsGroup.rotation.z -= 0.06;
     } else if(orb.classList.contains('processing')) {
-        coreMaterial.color.setHex(0xa200ff);
-        wireMaterial.color.setHex(0xa200ff);
-        particlesMaterial.color.setHex(0xa200ff);
+        coreMaterial.color.setHex(baseColor);
+        wireMaterial.color.setHex(baseColor);
+        particlesMaterial.color.setHex(baseColor);
         arcReactorGroup.rotation.x += 0.05; // Spin erratically
         coilsGroup.rotation.z -= 0.04;
     } else {
-        coreMaterial.color.setHex(0x00e5ff);
-        wireMaterial.color.setHex(0x00e5ff);
-        particlesMaterial.color.setHex(0x00e5ff);
+        // IDLE or SLEEP
+        if(document.body.classList.contains('sleep-mode')) {
+            coreMaterial.color.setHex(0x330000); // Dark red dormant
+            wireMaterial.color.setHex(0x111111);
+            particlesMaterial.color.setHex(0x000000);
+        } else {
+            coreMaterial.color.setHex(baseColor);
+            wireMaterial.color.setHex(baseColor);
+            particlesMaterial.color.setHex(baseColor);
+        }
     }
     
     // Core pulsing effect
@@ -124,6 +134,7 @@ function animate3D() {
     renderer.render(scene, camera);
 }
 animate3D();
+
 // ----------------------------------
 
 // State definitions
@@ -214,10 +225,20 @@ function connectWebSocket() {
                 const statusText = document.getElementById('status-text');
                 statusText.textContent = "USER DETECTED";
                 statusText.classList.add('cyan-text');
+                // Wake up from sleep if sleeping
+                document.body.classList.remove('sleep-mode');
                 setTimeout(() => {
                     statusText.classList.remove('cyan-text');
                     statusText.textContent = "SYSTEM ONLINE";
                 }, 4000);
+            } else if (data.type === "action") {
+                if (data.value === "red_alert") {
+                    document.body.classList.add("red-alert");
+                } else if (data.value === "red_alert_off") {
+                    document.body.classList.remove("red-alert");
+                } else if (data.value === "sleep_mode") {
+                    document.body.classList.add("sleep-mode");
+                }
             }
         } catch (e) {
             console.error("Error parsing message", e);

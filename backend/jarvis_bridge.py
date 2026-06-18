@@ -18,9 +18,7 @@ from providers import send_to_provider
 from memory import add_message, get_recent_history
 from web_search import invisible_search
 from media import media_listener_loop
-from media import media_listener_loop
 from vision import vision_listener_loop
-from calendar_integration import get_todays_agenda
 
 connected_clients = set()
 config = load_config()
@@ -28,9 +26,6 @@ pygame.mixer.init()
 
 # Global state for weather so we don't spam the API
 weather_data = {"temp": "--", "desc": "Offline"}
-
-# Bandera para saber si ya leímos el calendario hoy
-has_read_agenda = False
 
 async def broadcast_state(state):
     if connected_clients:
@@ -43,7 +38,6 @@ async def broadcast_custom(data_dict):
         await asyncio.gather(*[client.send(message) for client in connected_clients])
 
 async def event_handler_callback(data):
-    global has_read_agenda
     # Enviar al frontend
     await broadcast_custom(data)
     
@@ -51,16 +45,7 @@ async def event_handler_callback(data):
     if data.get("type") == "face_detected":
         print("[Jarvis]: Bienvenido de nuevo, señor.")
         asyncio.run_coroutine_threadsafe(broadcast_state("SPEAKING"), loop)
-        
-        greeting = "Bienvenido de nuevo, señor. Sistemas en línea."
-        
-        if not has_read_agenda:
-            agenda = get_todays_agenda()
-            if "faltan las credenciales" not in agenda:
-                greeting += " " + agenda
-                has_read_agenda = True # Solo leerlo una vez
-                
-        future = asyncio.run_coroutine_threadsafe(speak_text_edge(greeting, config.get("voice"), loop), loop)
+        future = asyncio.run_coroutine_threadsafe(speak_text_edge("Bienvenido de nuevo, señor. Sistemas en línea.", config.get("voice"), loop), loop)
         future.result()
         asyncio.run_coroutine_threadsafe(broadcast_state("IDLE"), loop)
 
@@ -211,7 +196,31 @@ def stt_loop(loop):
                 config = load_config()
                 with microphone as source:
                     audio_command = recognizer.listen(source, timeout=5, phrase_time_limit=10)
-                command_text = recognizer.recognize_google(audio_command, language="es-ES")
+                command_text = recognizer.recognize_google(audio_command, language="es-ES").lower()
+                
+                # Zero-config interceptors
+                if "alerta roja" in command_text or "código rojo" in command_text:
+                    asyncio.run_coroutine_threadsafe(send_to_clients({"type": "action", "value": "red_alert"}), loop)
+                    future = asyncio.run_coroutine_threadsafe(speak_text_edge("Sistemas de defensa activados. Alerta Roja iniciada.", config.get("voice"), loop), loop)
+                    future.result()
+                    continue
+                elif "desactiva la alerta" in command_text or "cancela la alerta" in command_text:
+                    asyncio.run_coroutine_threadsafe(send_to_clients({"type": "action", "value": "red_alert_off"}), loop)
+                    future = asyncio.run_coroutine_threadsafe(speak_text_edge("Alerta cancelada. Volviendo a parámetros normales.", config.get("voice"), loop), loop)
+                    future.result()
+                    continue
+                
+                open_match = re.search(r'^(abre|inicia|arranca) (.*)', command_text)
+                if open_match:
+                    app_to_open = open_match.group(2).strip()
+                    asyncio.run_coroutine_threadsafe(speak_text_edge(f"Iniciando {app_to_open}, señor.", config.get("voice"), loop), loop)
+                    try:
+                        subprocess.Popen(f'start {app_to_open}', shell=True)
+                    except Exception as e:
+                        print(f"Error abriendo app: {e}")
+                    asyncio.run_coroutine_threadsafe(send_to_clients({"type": "state", "state": "IDLE"}), loop)
+                    continue
+                
                 asyncio.run_coroutine_threadsafe(send_to_clients({"type": "state", "state": "PROCESSING"}), loop)
                 asyncio.run_coroutine_threadsafe(send_to_clients({"type": "message", "text": f"Procesando en {config.get('provider')}..."}), loop)
                 respuesta = send_to_provider(config, command_text)

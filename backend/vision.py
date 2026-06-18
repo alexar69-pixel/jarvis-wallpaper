@@ -58,9 +58,11 @@ async def vision_listener_loop(broadcast_callback):
                 last_seen_time = current_time
             else:
                 # No vemos rostro
-                if is_user_present and (time.time() - last_seen_time > ABSENCE_THRESHOLD):
+                current_time = time.time()
+                if is_user_present and (current_time - last_seen_time > ABSENCE_THRESHOLD):
                     is_user_present = False
-                    print("[Sistema] El usuario se ha ido (rostro no detectado por 60s).")
+                    print("[Sistema] Usuario se ha ido de la Webcam. Entrando en Modo Reposo.")
+                    await broadcast_callback({"type": "action", "value": "sleep_mode"})
                     await broadcast_callback({"type": "face_lost"})
                     
         except Exception as e:
