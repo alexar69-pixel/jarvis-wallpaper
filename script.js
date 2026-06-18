@@ -1,26 +1,22 @@
-const orb = document.getElementById('jarvis-orb');
-const statusText = document.getElementById('status-text');
-const responseText = document.getElementById('current-response');
+// Helper to update text across both layouts
+function updateDataText(selector, text) {
+    document.querySelectorAll(selector).forEach(el => el.innerText = text);
+}
+// Helper to update style across both layouts
+function updateDataStyleWidth(selector, widthStr) {
+    document.querySelectorAll(selector).forEach(el => el.style.width = widthStr);
+}
+function updateDataStyleColor(selector, colorStr) {
+    document.querySelectorAll(selector).forEach(el => el.style.color = colorStr);
+}
 
-// Telemetry elements
-const cpuBar = document.getElementById('cpu-bar');
-const cpuVal = document.getElementById('cpu-val');
-const ramBar = document.getElementById('ram-bar');
-const ramVal = document.getElementById('ram-val');
-const diskBar = document.getElementById('disk-bar');
-const diskVal = document.getElementById('disk-val');
-
-const timeDisplay = document.getElementById('time-display');
-const dateDisplay = document.getElementById('date-display');
-const weatherTemp = document.getElementById('weather-temp');
-const weatherDesc = document.getElementById('weather-desc');
-const weatherLoc = document.getElementById('weather-loc');
+const orb = document.getElementById('jarvis-orb-gold');
 
 // Clock logic
 setInterval(() => {
     const now = new Date();
-    timeDisplay.innerText = now.toLocaleTimeString('en-US', { hour12: false });
-    dateDisplay.innerText = now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase();
+    updateDataText('.data-time-display', now.toLocaleTimeString('en-US', { hour12: false }));
+    updateDataText('.data-date-display', now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase());
 }, 1000);
 
 // --- 3D Hologram Core (Three.js) ---
@@ -210,26 +206,22 @@ function connectWebSocket() {
             } else if (data.type === 'telemetry') {
                 updateTelemetry(data);
             } else if (data.type === "media") {
-                const mediaContainer = document.getElementById('media-panel-container');
-                const mediaTitle = document.getElementById('media-title');
-                const mediaArtist = document.getElementById('media-artist');
-                
-                if (data.title) {
-                    mediaTitle.textContent = data.title;
-                    mediaArtist.textContent = data.artist || '';
-                    mediaContainer.style.display = 'block';
+                const title = data.title;
+                const artist = data.artist || '';
+                if (title) {
+                    updateDataText('.data-media-title', title);
+                    updateDataText('.data-media-artist', artist);
+                    document.querySelectorAll('.data-media-panel-container').forEach(el => el.style.display = 'block');
                 } else {
-                    mediaContainer.style.display = 'none';
+                    document.querySelectorAll('.data-media-panel-container').forEach(el => el.style.display = 'none');
                 }
             } else if (data.type === "face_detected") {
-                const statusText = document.getElementById('status-text');
-                statusText.textContent = "USER DETECTED";
-                statusText.classList.add('cyan-text');
-                // Wake up from sleep if sleeping
+                updateDataText('.data-status-text', "USER DETECTED");
+                document.querySelectorAll('.data-status-text').forEach(el => el.classList.add('cyan-text'));
                 document.body.classList.remove('sleep-mode');
                 setTimeout(() => {
-                    statusText.classList.remove('cyan-text');
-                    statusText.textContent = "SYSTEM ONLINE";
+                    document.querySelectorAll('.data-status-text').forEach(el => el.classList.remove('cyan-text'));
+                    updateDataText('.data-status-text', "SYSTEM ONLINE");
                 }, 4000);
             } else if (data.type === "action") {
                 if (data.value === "red_alert") {
@@ -249,15 +241,16 @@ function connectWebSocket() {
                     dangerColor = getThemeColor('--danger');
                 }, 100);
             } else if (data.type === "shortcuts") {
-                const container = document.getElementById("dynamic-shortcuts");
-                if (container && data.shortcuts) {
-                    container.innerHTML = "";
+                // Gold uses dynamic shortcuts, Cyan uses hardcoded structure
+                const containerGold = document.getElementById("dynamic-shortcuts-gold");
+                if (containerGold && data.shortcuts) {
+                    containerGold.innerHTML = "";
                     data.shortcuts.forEach(sc => {
                         const btn = document.createElement("button");
                         btn.className = "btn-launch";
                         btn.textContent = sc.name;
                         btn.onclick = () => launchApp(sc.name);
-                        container.appendChild(btn);
+                        containerGold.appendChild(btn);
                     });
                 }
             }
@@ -275,38 +268,47 @@ function connectWebSocket() {
 
 function setState(stateName) {
     const state = STATES[stateName] || STATES.IDLE;
-    orb.className = 'reactor ' + state.class;
-    statusText.innerText = state.status;
+    // We update orb class manually for 3D logic
+    const orbGold = document.getElementById('jarvis-orb-gold');
+    if (orbGold) orbGold.className = 'reactor ' + state.class;
     
-    if(stateName === 'LISTENING') statusText.style.color = '#ff0055';
-    else if (stateName === 'PROCESSING') statusText.style.color = '#a200ff';
-    else statusText.style.color = 'var(--cyan)';
+    // If we want the cyan reactor to animate, we could add classes there too
+    // For now we just update text
+    updateDataText('.data-status-text', state.status);
+    
+    if(stateName === 'LISTENING') {
+        updateDataStyleColor('.data-status-text', '#ff0055');
+    } else if (stateName === 'PROCESSING') {
+        updateDataStyleColor('.data-status-text', '#a200ff');
+    } else {
+        updateDataStyleColor('.data-status-text', 'var(--cyan)');
+    }
 }
 
 function updateMessage(text) {
-    responseText.innerText = text;
+    updateDataText('.data-current-response', text);
 }
 
 function updateTelemetry(data) {
     // System stats
     if (data.cpu !== undefined) {
-        cpuBar.style.width = data.cpu + '%';
-        cpuVal.innerText = Math.round(data.cpu) + '%';
+        updateDataStyleWidth('.data-cpu-bar', data.cpu + '%');
+        updateDataText('.data-cpu-val', Math.round(data.cpu) + '%');
     }
     if (data.ram !== undefined) {
-        ramBar.style.width = data.ram + '%';
-        ramVal.innerText = Math.round(data.ram) + '%';
+        updateDataStyleWidth('.data-ram-bar', data.ram + '%');
+        updateDataText('.data-ram-val', Math.round(data.ram) + '%');
     }
     if (data.disk !== undefined) {
-        diskBar.style.width = data.disk + '%';
-        diskVal.innerText = Math.round(data.disk) + '%';
+        updateDataStyleWidth('.data-disk-bar', data.disk + '%');
+        updateDataText('.data-disk-val', Math.round(data.disk) + '%');
     }
     
     // Weather stats
     if (data.weather) {
-        weatherTemp.innerText = data.weather.temp + '°C';
-        weatherDesc.innerText = data.weather.desc;
-        weatherLoc.innerText = data.weather.location.toUpperCase();
+        updateDataText('.data-weather-temp', data.weather.temp + '°C');
+        updateDataText('.data-weather-desc', data.weather.desc);
+        updateDataText('.data-weather-loc', data.weather.location.toUpperCase());
     }
 }
 

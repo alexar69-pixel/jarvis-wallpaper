@@ -13,96 +13,235 @@
     <div class="bg-grid"></div>
     <div class="bg-vignette"></div>
 
-    <div class="hud-container">
+    <!-- ==================== LAYOUT GOLD (Mark IV) ==================== -->
+    <div id="layout-gold" class="layout-container">
+        <div class="hud-container">
+            
+            <!-- LEFT: SHORTCUT PANELS -->
+            <div class="shortcuts-left">
+                <div class="panel shortcuts-panel">
+                    <div class="panel-header">QUICK LAUNCH PROTOCOLS</div>
+                    <!-- Dynamic shortcuts will be injected here -->
+                    <div class="shortcut-grid" id="dynamic-shortcuts-gold">
+                        <button class="btn-launch" onclick="launchApp('settings')" style="color: var(--primary); border-color: var(--primary);">⚙️ SETTINGS</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CENTER: ARC REACTOR & HOLOGRAM -->
+            <div class="reactor-center">
+                <div class="reactor-container">
+                    <div class="reactor" id="jarvis-orb-gold">
+                        <!-- Three Container moved to Javascript insertion based on active layout to avoid 3D context loss, or we keep it here if we don't duplicate -->
+                        <div id="three-container-gold" style="position: absolute; width: 100%; height: 100%; z-index: 2; border-radius: 50%; overflow: hidden;"></div>
+                        <div class="reactor-core">
+                            <canvas id="wave-canvas" class="data-wave-canvas"></canvas>
+                        </div>
+                        <div class="reactor-ring ring-1"></div>
+                        <div class="reactor-ring ring-2"></div>
+                        <div class="reactor-ring ring-3"></div>
+                        <div class="reactor-ring ring-4"></div>
+                        <div class="reactor-ring ring-inner"></div>
+                    </div>
+                    <div class="status-text data-status-text">SYSTEM ONLINE</div>
+                </div>
+                
+                <!-- SUBTITLES (Centered below reactor) -->
+                <div class="interaction-area">
+                    <div class="message-container">
+                        <div class="message jarvis">
+                            <span class="prefix">J.A.R.V.I.S:</span>
+                            <span class="text data-current-response">Iniciando sistemas de telemetría...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: INFORMATION PANELS -->
+            <div class="panels-right">
+                
+                <!-- WEATHER & TIME -->
+                <div class="panel weather-panel">
+                    <div class="time-display data-time-display">00:00:00</div>
+                    <div class="date-display data-date-display">01/01/2026</div>
+                    <div class="weather-info">
+                        <div class="weather-temp data-weather-temp">--°C</div>
+                        <div class="weather-desc data-weather-desc">Awaiting Telemetry...</div>
+                        <div class="weather-loc data-weather-loc">Unknown Location</div>
+                    </div>
+                </div>
+
+                <!-- Panel de Música / Media -->
+                <div class="panel media-panel data-media-panel-container" style="display: none;">
+                    <div class="panel-header">NOW PLAYING</div>
+                    <div class="media-content" style="padding-top: 10px;">
+                        <div class="cyan-text data-media-title" style="font-size: 1.1em; font-weight: bold; text-transform: uppercase;">Title</div>
+                        <div class="data-media-artist" style="color: #888; font-size: 0.9em; text-transform: uppercase; margin-top: 5px;">Artist</div>
+                    </div>
+                </div>
+
+                <!-- SYSTEM STATS -->
+                <div class="panel system-panel">
+                    <div class="panel-header">SYSTEM DIAGNOSTICS</div>
+                    <div class="stat-row">
+                        <span class="stat-label">CPU LOAD</span>
+                        <div class="bar-container"><div class="bar-fill data-cpu-bar" style="width: 0%;"></div></div>
+                        <span class="stat-value data-cpu-val">0%</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">MEMORY</span>
+                        <div class="bar-container"><div class="bar-fill data-ram-bar" style="width: 0%;"></div></div>
+                        <span class="stat-value data-ram-val">0%</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">DISK (C:)</span>
+                        <div class="bar-container"><div class="bar-fill data-disk-bar" style="width: 0%;"></div></div>
+                        <span class="stat-value data-disk-val">0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- =============================================================== -->
+
+
+    <!-- ==================== LAYOUT CYAN (Circular UI) ==================== -->
+    <div id="layout-cyan" class="layout-container" style="display: none;">
+        <!-- Absolute positioned UI matching screenshot -->
         
-        <!-- LEFT: SHORTCUT PANELS -->
-        <div class="shortcuts-left">
-            <div class="panel shortcuts-panel">
-                <div class="panel-header">QUICK LAUNCH PROTOCOLS</div>
-                <!-- Dynamic shortcuts will be injected here -->
-                <div class="shortcut-grid" id="dynamic-shortcuts">
-                    <!-- Placeholder -->
-                    <button class="btn-launch" onclick="launchApp('settings')" style="color: var(--primary); border-color: var(--primary);">⚙️ SETTINGS</button>
+        <!-- LEFT METERS -->
+        <div class="cyan-left-meters">
+            <!-- Pulse Meter -->
+            <div class="cyan-meter meter-pulse">
+                <div class="meter-outer-ring">
+                    <div class="meter-gap-top"></div>
+                    <div class="meter-gap-bottom"></div>
                 </div>
+                <div class="meter-inner-circle"></div>
+                <div class="meter-text">
+                    <span class="title">Pulse</span>
+                    <span class="value">72</span>
+                </div>
+            </div>
+
+            <!-- Capacity Data -->
+            <div class="cyan-data-group">
+                <div class="cyan-data-row"><span class="icon">↻</span> Full Capacity: <span class="data-disk-val cyan-highlight">133 G</span></div>
+                <div class="cyan-data-row">Free Capacity: <span class="cyan-highlight">61 G</span></div>
+            </div>
+
+            <!-- Power Meter -->
+            <div class="cyan-meter meter-power">
+                <div class="meter-outer-ring thin">
+                    <div class="meter-arc" style="transform: rotate(-45deg);"></div>
+                </div>
+                <div class="meter-inner-circle small">
+                    <span class="value data-cpu-val">100%</span>
+                    <span class="title">High</span>
+                </div>
+                <span class="power-label">Power</span>
+            </div>
+
+            <!-- Communication Meter -->
+            <div class="cyan-meter meter-comm">
+                <div class="meter-outer-ring bottom-heavy"></div>
+                <div class="meter-inner-circle medium">
+                    <span class="title">HOTMAIL</span>
+                </div>
+                <span class="comm-label">Communication</span>
+            </div>
+
+            <!-- Connecting Vertical Lines -->
+            <div class="cyan-vertical-line main-line"></div>
+            <div class="cyan-vertical-line side-line"></div>
+        </div>
+
+        <!-- CENTER COMPLEX REACTOR -->
+        <div class="cyan-center-reactor">
+            <div class="reactor-layer layer-1"></div>
+            <div class="reactor-layer layer-2"></div>
+            <div class="reactor-layer layer-3 dashed-blue"></div>
+            <div class="reactor-layer layer-4 dots"></div>
+            <div class="reactor-layer layer-5 crosshair">
+                <div class="crosshair-center">+</div>
             </div>
         </div>
 
-        <!-- CENTER: ARC REACTOR & HOLOGRAM -->
-        <div class="reactor-center">
-            <div class="reactor-container">
-                <div class="reactor" id="jarvis-orb">
-                    <div id="three-container" style="position: absolute; width: 100%; height: 100%; z-index: 2; border-radius: 50%; overflow: hidden;"></div>
-                    <div class="reactor-core">
-                        <canvas id="wave-canvas"></canvas>
-                    </div>
-                    <div class="reactor-ring ring-1"></div>
-                    <div class="reactor-ring ring-2"></div>
-                    <div class="reactor-ring ring-3"></div>
-                    <div class="reactor-ring ring-4"></div>
-                    <div class="reactor-ring ring-inner"></div>
-                </div>
-                <div class="status-text" id="status-text">SYSTEM ONLINE</div>
+        <!-- RIGHT TOP TREE -->
+        <div class="cyan-right-tree">
+            <div class="tree-mini-reactor">
+                <div class="mini-reactor-core"></div>
+                <div class="mini-reactor-ring"></div>
             </div>
             
-            <!-- SUBTITLES (Centered below reactor) -->
-            <div class="interaction-area">
-                <div class="message-container">
-                    <div class="message jarvis">
-                        <span class="prefix">J.A.R.V.I.S:</span>
-                        <span class="text" id="current-response">Iniciando sistemas de telemetría...</span>
-                    </div>
+            <!-- Branches Top Left -->
+            <div class="tree-branch top-left">
+                <div class="node" onclick="launchApp('documents')"><div class="dot"></div>Documents</div>
+                <div class="node" onclick="launchApp('videos')"><div class="dot"></div>Videos</div>
+                <div class="node" onclick="launchApp('music')"><div class="dot"></div>Music</div>
+                <div class="node" onclick="launchApp('programs')"><div class="dot"></div>Programs</div>
+            </div>
+
+            <!-- Branches Top Right -->
+            <div class="tree-branch top-right">
+                <div class="node right-align" onclick="launchApp('downloads')">Downloads<div class="dot"></div></div>
+                <div class="node right-align" onclick="launchApp('images')">Images<div class="dot"></div></div>
+            </div>
+
+            <!-- Vertical List Below Mini Reactor -->
+            <div class="tree-vertical-line">
+                <div class="node-list">
+                    <div class="node" onclick="launchApp('mpc')"><div class="dot"></div>MPC</div>
+                    <div class="node" onclick="launchApp('photoshop')"><div class="dot"></div>Photoshop</div>
+                    <div class="node" onclick="launchApp('word')"><div class="dot"></div>Word</div>
+                    <div class="node" onclick="launchApp('excel')"><div class="dot"></div>Excel</div>
+                    <div class="node" onclick="launchApp('powerpoint')"><div class="dot"></div>Powerpoint</div>
                 </div>
+            </div>
+
+            <!-- Right side generic apps list -->
+            <div class="tree-apps-list">
+                <div class="node right-align" onclick="launchApp('gmail')">Gmail<div class="dot"></div></div>
+                <div class="node right-align" onclick="launchApp('wikipedia')">Wikipedia<div class="dot"></div></div>
+                <div class="node right-align" onclick="launchApp('gtu')">GTU<div class="dot"></div></div>
+                <div class="node right-align" onclick="launchApp('ssasit')">SSASIT<div class="dot"></div></div>
+                <div class="node right-align" onclick="launchApp('linkedin')">LinkedIn<div class="dot"></div></div>
+                <div class="node right-align" onclick="launchApp('torrentz')">Torrentz<div class="dot"></div></div>
+                <div class="node right-align" onclick="launchApp('unit conv')">Unit Conv<div class="dot"></div></div>
+                <div class="node right-align" onclick="launchApp('gtu inno')">GTU Inno<div class="dot"></div></div>
+                <div class="node right-align" onclick="launchApp('catgurus')">CatGurus<div class="dot"></div></div>
+                <div class="node right-align" onclick="launchApp('twitter')">Twitter<div class="dot"></div></div>
+                <div class="node right-align" onclick="launchApp('facebook')">Facebook<div class="dot"></div></div>
+                <div class="node right-align" onclick="launchApp('youtube')">Youtube<div class="dot"></div></div>
             </div>
         </div>
 
-        <!-- RIGHT: INFORMATION PANELS -->
-        <div class="panels-right">
-            
-            <!-- WEATHER & TIME -->
-            <div class="panel weather-panel">
-                <div class="time-display" id="time-display">00:00:00</div>
-                <div class="date-display" id="date-display">01/01/2026</div>
-                <div class="weather-info">
-                    <div class="weather-temp" id="weather-temp">--°C</div>
-                    <div class="weather-desc" id="weather-desc">Awaiting Telemetry...</div>
-                    <div class="weather-loc" id="weather-loc">Unknown Location</div>
-                </div>
+        <!-- BOTTOM RIGHT WEATHER -->
+        <div class="cyan-bottom-weather">
+            <div class="weather-text">
+                <div class="desc data-weather-desc">mostly cloudy</div>
+                <div class="sub-desc">Atmospheric<br>Analysis</div>
             </div>
+            <div class="weather-dial">
+                <div class="dial-arc"></div>
+                <div class="temp data-weather-temp">30°</div>
+            </div>
+        </div>
 
-            <!-- Panel de Música / Media -->
-            <div class="panel media-panel" id="media-panel-container" style="display: none;">
-                <div class="panel-header">NOW PLAYING</div>
-                <div class="media-content" style="padding-top: 10px;">
-                    <div class="cyan-text" style="font-size: 1.1em; font-weight: bold; text-transform: uppercase;" id="media-title">Title</div>
-                    <div style="color: #888; font-size: 0.9em; text-transform: uppercase; margin-top: 5px;" id="media-artist">Artist</div>
+        <!-- SUBTITLES (Centered below reactor) -->
+        <div class="interaction-area" style="position: absolute; bottom: 50px; width: 100%; display: flex; justify-content: center; z-index: 100;">
+            <div class="message-container" style="width: 60%; background: rgba(0,20,30,0.8); border: 1px solid var(--primary);">
+                <div class="message jarvis">
+                    <span class="prefix">J.A.R.V.I.S:</span>
+                    <span class="text data-current-response">Iniciando sistemas de telemetría...</span>
                 </div>
             </div>
-
-            <!-- SYSTEM STATS -->
-            <div class="panel system-panel">
-                <div class="panel-header">SYSTEM DIAGNOSTICS</div>
-                <div class="stat-row">
-                    <span class="stat-label">CPU LOAD</span>
-                    <div class="bar-container"><div class="bar-fill" id="cpu-bar" style="width: 0%;"></div></div>
-                    <span class="stat-value" id="cpu-val">0%</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">MEMORY</span>
-                    <div class="bar-container"><div class="bar-fill" id="ram-bar" style="width: 0%;"></div></div>
-                    <span class="stat-value" id="ram-val">0%</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">DISK (C:)</span>
-                    <div class="bar-container"><div class="bar-fill" id="disk-bar" style="width: 0%;"></div></div>
-                    <span class="stat-value" id="disk-val">0%</span>
-                </div>
-            </div>
-            
         </div>
 
     </div>
+    <!-- =============================================================== -->
 
-    <!-- Floating settings button for Minimalist Theme where side panels are hidden -->
+    <!-- Floating settings button -->
     <button class="floating-settings" onclick="launchApp('settings')">⚙️ SETTINGS</button>
 
     <!-- Three.js Library -->
