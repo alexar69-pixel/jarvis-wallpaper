@@ -81,6 +81,7 @@ class JarvisSettingsApp:
             try:
                 async with websockets.connect("ws://127.0.0.1:8765") as ws:
                     await ws.send(json.dumps({"type": "action", "action": "update_theme", "theme": self.config["theme"]}))
+                    await asyncio.sleep(0.1)
             except Exception as e:
                 print("No se pudo notificar al backend:", e)
                 

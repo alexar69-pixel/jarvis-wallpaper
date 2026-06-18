@@ -127,7 +127,11 @@ async def telemetry_loop():
 async def send_to_clients(message_dict):
     if connected_clients:
         message_json = json.dumps(message_dict)
-        await asyncio.gather(*[client.send(message_json) for client in connected_clients])
+        for client in list(connected_clients):
+            try:
+                await client.send(message_json)
+            except Exception:
+                pass
 
 async def speak_text_edge(text, voice, loop):
     await send_to_clients({"type": "message", "text": text})
