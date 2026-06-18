@@ -239,3 +239,5 @@ body.red-alert { --primary: #ff0000; --primary-dim: rgba(255,0,0,0.3); --primary
 
 .floating-settings { display: none; position: absolute; bottom: 30px; right: 30px; background: transparent; border: 1px solid var(--primary); color: var(--primary); padding: 10px 15px; font-family: var(--font-mono); font-size: 14px; cursor: pointer; transition: all 0.3s; z-index: 9999; }
 .floating-settings:hover { background: var(--primary); color: #000; box-shadow: 0 0 20px var(--primary); }
+body.theme-cyan .floating-settings { display: block !important; }
+
