@@ -389,7 +389,7 @@ body.theme-cyan #layout-cyan { display: block !important; }
 .node.right-align { flex-direction: row-reverse; justify-content: flex-end; }
 
 .tree-vertical-line {
-    position: absolute; right: 40px; top: 180px; width: 1px; height: 500px;
+    position: absolute; right: 140px; top: 180px; width: 1px; height: 500px;
     background: var(--primary);
 }
 .node-list {
