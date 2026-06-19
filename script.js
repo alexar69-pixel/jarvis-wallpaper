@@ -241,16 +241,48 @@ function connectWebSocket() {
                     dangerColor = getThemeColor('--danger');
                 }, 100);
             } else if (data.type === "shortcuts") {
-                // Gold uses dynamic shortcuts, Cyan uses hardcoded structure
+                // Gold uses dynamic shortcuts
                 const containerGold = document.getElementById("dynamic-shortcuts-gold");
                 if (containerGold && data.shortcuts) {
                     containerGold.innerHTML = "";
                     data.shortcuts.forEach(sc => {
                         const btn = document.createElement("button");
                         btn.className = "btn-launch";
-                        btn.textContent = sc.name;
-                        btn.onclick = () => launchApp(sc.name);
+                        btn.onclick = () => launchApp(sc.name.toLowerCase());
+                        btn.innerText = sc.name;
                         containerGold.appendChild(btn);
+                    });
+                }
+                
+                // Cyan dynamically distributes shortcuts across 4 specific containers to keep the design shape
+                const topLeft = document.querySelector(".tree-branch.top-left");
+                const topRight = document.querySelector(".tree-branch.top-right");
+                const nodeList = document.querySelector(".node-list");
+                const appsList = document.querySelector(".tree-apps-list");
+                
+                if (topLeft && topRight && nodeList && appsList && data.shortcuts) {
+                    topLeft.innerHTML = "";
+                    topRight.innerHTML = "";
+                    nodeList.innerHTML = "";
+                    appsList.innerHTML = "";
+                    
+                    data.shortcuts.forEach((sc, index) => {
+                        const name = sc.name;
+                        // Escape quotes if needed
+                        const appArg = sc.name.replace(/'/g, "\\'").toLowerCase();
+                        
+                        const leftTpl = `<div class="node" onclick="launchApp('${appArg}')"><div class="dot"></div>${name}</div>`;
+                        const rightTpl = `<div class="node right-align" onclick="launchApp('${appArg}')">${name}<div class="dot"></div></div>`;
+                        
+                        if (index < 4) {
+                            topLeft.insertAdjacentHTML('beforeend', leftTpl);
+                        } else if (index < 6) {
+                            topRight.insertAdjacentHTML('beforeend', rightTpl);
+                        } else if (index < 11) {
+                            nodeList.insertAdjacentHTML('beforeend', leftTpl);
+                        } else {
+                            appsList.insertAdjacentHTML('beforeend', rightTpl);
+                        }
                     });
                 }
             }
